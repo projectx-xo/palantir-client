@@ -4,6 +4,8 @@ import com.perplexddev.palantir.tracker.ShardSnapshot;
 import com.perplexddev.palantir.util.RenderUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 
 /**
@@ -27,14 +29,14 @@ public final class ShardHudRenderer {
         this.measurer = text -> client.textRenderer.getWidth(text);
     }
 
-    public void render(MatrixStack matrices, ShardSnapshot snapshot, HudOptions options) {
+    public void render(DrawContext context, ShardSnapshot snapshot, HudOptions options) {
         if (!options.enabled()) {
             return;
         }
         if (options.hideWhenEmpty() && snapshot.isEmpty()) {
             return;
         }
-        if (options.hideWithDebugScreen() && client.options.debugEnabled) {
+        if (options.hideWithDebugScreen() && client.inGameHud.getDebugHud().shouldShowDebugHud()) {
             return;
         }
 
@@ -51,10 +53,13 @@ public final class ShardHudRenderer {
         int x = HudLayout.x(options.anchor(), options.offsetX(), panel.width(), screenWidth);
         int y = HudLayout.y(options.anchor(), options.offsetY(), panel.height(), screenHeight);
 
+        MatrixStack matrices = context.getMatrices();
+        VertexConsumerProvider.Immediate vertexConsumers = context.getVertexConsumers();
+
         matrices.push();
         matrices.scale(scaleX, scaleY, 1.0f);
 
-        RenderUtil.panel(matrices, x, y, panel.width(), panel.height(),
+        RenderUtil.panel(matrices, vertexConsumers, x, y, panel.width(), panel.height(),
                 options.backgroundColor(), options.borderColor(), options.roundedCorners());
 
         TextRenderer textRenderer = client.textRenderer;
@@ -62,7 +67,7 @@ public final class ShardHudRenderer {
         int textY = y + HudPanelBuilder.VERTICAL_PADDING;
         for (HudRow row : panel.rows()) {
             if (!row.text().isEmpty()) {
-                textRenderer.drawWithShadow(matrices, row.text(), textX, textY, row.color());
+                RenderUtil.drawTextWithShadow(matrices, vertexConsumers, textRenderer, row.text(), textX, textY, row.color());
             }
             textY += HudPanelBuilder.LINE_HEIGHT;
         }

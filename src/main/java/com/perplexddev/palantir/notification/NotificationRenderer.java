@@ -4,6 +4,8 @@ import com.perplexddev.palantir.util.ColorUtil;
 import com.perplexddev.palantir.util.RenderUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 
 import java.util.HashMap;
@@ -32,7 +34,7 @@ public final class NotificationRenderer {
         this.client = client;
     }
 
-    public void render(MatrixStack matrices, NotificationManager manager,
+    public void render(DrawContext context, NotificationManager manager,
                        NotificationOptions options, long nowMillis) {
         List<ActiveNotification> active = manager.active();
         if (active.isEmpty()) {
@@ -44,6 +46,9 @@ public final class NotificationRenderer {
         int screenHeight = Math.round(client.getWindow().getScaledHeight() / scale);
         int height = LINE_HEIGHT * 2 + VERTICAL_PADDING * 2;
 
+        MatrixStack matrices = context.getMatrices();
+        VertexConsumerProvider.Immediate vertexConsumers = context.getVertexConsumers();
+
         matrices.push();
         matrices.scale(scale, scale, 1.0f);
 
@@ -54,7 +59,7 @@ public final class NotificationRenderer {
             if (opacity <= 0.0f) {
                 continue;
             }
-            drawNotification(matrices, entry, options, opacity, stackIndex,
+            drawNotification(matrices, vertexConsumers, entry, options, opacity, stackIndex,
                     screenWidth, screenHeight, height);
         }
 
@@ -65,8 +70,8 @@ public final class NotificationRenderer {
         widthCache.clear();
     }
 
-    private void drawNotification(MatrixStack matrices, ActiveNotification entry,
-                                  NotificationOptions options, float opacity, int stackIndex,
+    private void drawNotification(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers,
+                                  ActiveNotification entry, NotificationOptions options, float opacity, int stackIndex,
                                   int screenWidth, int screenHeight, int height) {
         int width = widthOf(entry.notification());
         int x = NotificationLayout.baseX(options.corner(), options.offsetX(), width, screenWidth)
@@ -74,7 +79,7 @@ public final class NotificationRenderer {
         int y = NotificationLayout.y(options.corner(), options.offsetY(), height, screenHeight,
                 stackIndex, SPACING);
 
-        RenderUtil.panel(matrices, x, y, width, height,
+        RenderUtil.panel(matrices, vertexConsumers, x, y, width, height,
                 ColorUtil.withAlphaFactor(options.backgroundColor(), opacity),
                 ColorUtil.withAlphaFactor(options.borderColor(), opacity),
                 options.roundedCorners());
@@ -83,9 +88,9 @@ public final class NotificationRenderer {
         int textX = x + HORIZONTAL_PADDING;
         int textY = y + VERTICAL_PADDING;
 
-        textRenderer.drawWithShadow(matrices, entry.notification().title(), textX, textY,
+        RenderUtil.drawTextWithShadow(matrices, vertexConsumers, textRenderer, entry.notification().title(), textX, textY,
                 ColorUtil.withAlphaFactor(options.titleColor(), opacity));
-        textRenderer.drawWithShadow(matrices, entry.notification().body(), textX, textY + LINE_HEIGHT,
+        RenderUtil.drawTextWithShadow(matrices, vertexConsumers, textRenderer, entry.notification().body(), textX, textY + LINE_HEIGHT,
                 ColorUtil.withAlphaFactor(options.bodyColor(), opacity));
     }
 

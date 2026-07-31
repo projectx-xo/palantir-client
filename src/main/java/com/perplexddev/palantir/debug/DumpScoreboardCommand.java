@@ -1,13 +1,13 @@
 package com.perplexddev.palantir.debug;
 
 import com.mojang.brigadier.Command;
-import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.scoreboard.Team;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.slf4j.Logger;
 
@@ -35,15 +35,16 @@ public final class DumpScoreboardCommand {
     }
 
     public static void register(Logger logger) {
-        ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("palantirdump")
-                .executes(context -> run(context.getSource(), logger)));
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
+                dispatcher.register(ClientCommandManager.literal("palantirdump")
+                        .executes(context -> run(context.getSource(), logger))));
     }
 
     private static int run(FabricClientCommandSource source, Logger logger) {
         MinecraftClient client = source.getClient();
         ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
         if (networkHandler == null) {
-            source.sendError(new LiteralText("Not connected to a server."));
+            source.sendError(Text.literal("Not connected to a server."));
             return 0;
         }
 
@@ -57,12 +58,12 @@ public final class DumpScoreboardCommand {
             Files.writeString(path, dump, StandardCharsets.UTF_8);
         } catch (IOException e) {
             logger.error("Failed to write Palantir Client scoreboard dump", e);
-            source.sendError(new LiteralText("Failed to write dump: " + e.getMessage()));
+            source.sendError(Text.literal("Failed to write dump: " + e.getMessage()));
             return 0;
         }
 
         logger.info("Palantir Client scoreboard dump written to {}", path);
-        source.sendFeedback(new LiteralText("Dumped " + entries.size() + " tab-list entries to " + path));
+        source.sendFeedback(Text.literal("Dumped " + entries.size() + " tab-list entries to " + path));
         return Command.SINGLE_SUCCESS;
     }
 

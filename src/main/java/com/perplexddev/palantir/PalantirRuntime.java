@@ -19,9 +19,10 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.text.Text;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -96,9 +97,9 @@ public final class PalantirRuntime {
 
         // Keeps the test notification visible when the config screen is opened outside a world.
         ScreenEvents.AFTER_INIT.register((minecraftClient, screen, width, height) ->
-                ScreenEvents.afterRender(screen).register((currentScreen, matrices, mouseX, mouseY, delta) -> {
+                ScreenEvents.afterRender(screen).register((currentScreen, context, mouseX, mouseY, delta) -> {
                     if (client.world == null) {
-                        notificationRenderer.render(matrices, notifications,
+                        notificationRenderer.render(context, notifications,
                                 settings.notifications(), System.currentTimeMillis());
                     }
                 }));
@@ -116,21 +117,21 @@ public final class PalantirRuntime {
             client.setScreen(new ColorWheelScreen(settings));
         }
         if (settings.consumeTrackedPlayersEditorRequest()) {
-            client.setScreen(new PlayerListEditorScreen(new LiteralText("Tracked Players"), "",
+            client.setScreen(new PlayerListEditorScreen(Text.literal("Tracked Players"), "",
                     "username", settings.trackedPlayerNames(), settings::saveTrackedPlayerNames));
         }
         if (settings.consumeIgnoredPlayersEditorRequest()) {
-            client.setScreen(new PlayerListEditorScreen(new LiteralText("Ignored Players"),
+            client.setScreen(new PlayerListEditorScreen(Text.literal("Ignored Players"),
                     "Use * as a wildcard, e.g. hoodcartel*", "username or pattern",
                     settings.ignoredPlayerPatterns(), settings::saveIgnoredPlayerPatterns));
         }
         if (settings.consumeTrackedFactionsEditorRequest()) {
-            client.setScreen(new PlayerListEditorScreen(new LiteralText("Tracked Factions"),
+            client.setScreen(new PlayerListEditorScreen(Text.literal("Tracked Factions"),
                     "Use * as a wildcard, e.g. Ikea*", "faction name or pattern",
                     settings.trackedFactionPatterns(), settings::saveTrackedFactionPatterns));
         }
         if (settings.consumeIgnoredFactionsEditorRequest()) {
-            client.setScreen(new PlayerListEditorScreen(new LiteralText("Ignored Factions"),
+            client.setScreen(new PlayerListEditorScreen(Text.literal("Ignored Factions"),
                     "Use * as a wildcard, e.g. Ikea*", "faction name or pattern",
                     settings.ignoredFactionPatterns(), settings::saveIgnoredFactionPatterns));
         }
@@ -186,17 +187,17 @@ public final class PalantirRuntime {
             return;
         }
         String message = hudVisible ? "Palantir Client HUD shown" : "Palantir Client HUD hidden";
-        client.inGameHud.setOverlayMessage(new LiteralText(message), false);
+        client.inGameHud.setOverlayMessage(Text.literal(message), false);
     }
 
-    private void onHudRender(MatrixStack matrices, float tickDelta) {
+    private void onHudRender(DrawContext context, RenderTickCounter tickCounter) {
         if (!settings.modEnabled() || client.player == null) {
             return;
         }
         if (hudVisible) {
-            hudRenderer.render(matrices, tracker.snapshot(), settings.hud());
+            hudRenderer.render(context, tracker.snapshot(), settings.hud());
         }
-        notificationRenderer.render(matrices, notifications, settings.notifications(),
+        notificationRenderer.render(context, notifications, settings.notifications(),
                 System.currentTimeMillis());
     }
 

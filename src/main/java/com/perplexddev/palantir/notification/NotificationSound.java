@@ -28,6 +28,6 @@ public final class NotificationSound {
             return;
         }
         client.getSoundManager().play(
-                PositionedSoundInstance.master(SoundEvents.BLOCK_NOTE_BLOCK_BELL, PITCH, volume));
+                PositionedSoundInstance.master(SoundEvents.BLOCK_NOTE_BLOCK_BELL.value(), PITCH, volume));
     }
 }

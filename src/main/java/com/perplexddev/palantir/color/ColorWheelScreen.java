@@ -2,11 +2,10 @@ package com.perplexddev.palantir.color;
 
 import com.perplexddev.palantir.config.Settings;
 import com.perplexddev.palantir.util.RenderUtil;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -49,7 +48,7 @@ public final class ColorWheelScreen extends Screen {
     private boolean draggingWheel;
 
     public ColorWheelScreen(Settings settings) {
-        super(new LiteralText("Edit Palantir Client Colors"));
+        super(Text.literal("Edit Palantir Client Colors"));
         this.settings = settings;
         this.workingColors = new EnumMap<>(settings.appearanceColors());
     }
@@ -103,35 +102,35 @@ public final class ColorWheelScreen extends Screen {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float tickDelta) {
-        renderBackground(matrices);
+    public void render(DrawContext context, int mouseX, int mouseY, float tickDelta) {
+        renderBackground(context, mouseX, mouseY, tickDelta);
 
-        drawSwatchList(matrices);
-        drawWheel(matrices);
-        drawHexReadout(matrices);
+        drawSwatchList(context);
+        drawWheel(context);
+        drawHexReadout(context);
 
-        super.render(matrices, mouseX, mouseY, tickDelta);
+        super.render(context, mouseX, mouseY, tickDelta);
 
-        DrawableHelper.drawCenteredText(matrices, textRenderer, HINT, width / 2, height - 16, HIGHLIGHT_COLOR);
+        context.drawCenteredTextWithShadow(textRenderer, HINT, width / 2, height - 16, HIGHLIGHT_COLOR);
     }
 
-    private void drawSwatchList(MatrixStack matrices) {
+    private void drawSwatchList(DrawContext context) {
         AppearanceColorKey[] keys = AppearanceColorKey.values();
         for (int i = 0; i < keys.length; i++) {
             AppearanceColorKey key = keys[i];
             int rowY = SWATCH_LIST_Y + i * ROW_HEIGHT;
             if (key == selected) {
-                RenderUtil.fillRect(matrices, SWATCH_LIST_X - 3, rowY - 3, SWATCH_SIZE + 6, SWATCH_SIZE + 6,
-                        HIGHLIGHT_COLOR, false);
+                RenderUtil.fillRect(context.getMatrices(), context.getVertexConsumers(),
+                        SWATCH_LIST_X - 3, rowY - 3, SWATCH_SIZE + 6, SWATCH_SIZE + 6, HIGHLIGHT_COLOR, false);
             }
-            RenderUtil.fillRect(matrices, SWATCH_LIST_X, rowY, SWATCH_SIZE, SWATCH_SIZE,
-                    workingColors.get(key) | OPAQUE_MASK, false);
-            textRenderer.drawWithShadow(matrices, key.toString(), SWATCH_LIST_X + SWATCH_SIZE + 8,
+            RenderUtil.fillRect(context.getMatrices(), context.getVertexConsumers(),
+                    SWATCH_LIST_X, rowY, SWATCH_SIZE, SWATCH_SIZE, workingColors.get(key) | OPAQUE_MASK, false);
+            context.drawTextWithShadow(textRenderer, key.toString(), SWATCH_LIST_X + SWATCH_SIZE + 8,
                     rowY + (SWATCH_SIZE - textRenderer.fontHeight) / 2, 0xFFFFFFFF);
         }
     }
 
-    private void drawWheel(MatrixStack matrices) {
+    private void drawWheel(DrawContext context) {
         for (int dx = -WHEEL_RADIUS; dx <= WHEEL_RADIUS; dx += WHEEL_CELL_SIZE) {
             for (int dy = -WHEEL_RADIUS; dy <= WHEEL_RADIUS; dy += WHEEL_CELL_SIZE) {
                 int x = wheelCenterX + dx;
@@ -140,23 +139,26 @@ public final class ColorWheelScreen extends Screen {
                 if (ColorWheelMath.alphaOf(color) == 0) {
                     continue;
                 }
-                RenderUtil.fillRect(matrices, x, y, WHEEL_CELL_SIZE, WHEEL_CELL_SIZE, color, false);
+                RenderUtil.fillRect(context.getMatrices(), context.getVertexConsumers(),
+                        x, y, WHEEL_CELL_SIZE, WHEEL_CELL_SIZE, color, false);
             }
         }
-        drawWheelCursor(matrices);
+        drawWheelCursor(context);
     }
 
-    private void drawWheelCursor(MatrixStack matrices) {
+    private void drawWheelCursor(DrawContext context) {
         double radians = Math.toRadians(hue);
         int cursorX = wheelCenterX + (int) Math.round(WHEEL_RADIUS * saturation * Math.cos(radians));
         int cursorY = wheelCenterY - (int) Math.round(WHEEL_RADIUS * saturation * Math.sin(radians));
-        RenderUtil.fillRect(matrices, cursorX - 3, cursorY - 3, 6, 6, HIGHLIGHT_COLOR, false);
-        RenderUtil.fillRect(matrices, cursorX - 2, cursorY - 2, 4, 4, workingColors.get(selected) | OPAQUE_MASK, false);
+        RenderUtil.fillRect(context.getMatrices(), context.getVertexConsumers(),
+                cursorX - 3, cursorY - 3, 6, 6, HIGHLIGHT_COLOR, false);
+        RenderUtil.fillRect(context.getMatrices(), context.getVertexConsumers(),
+                cursorX - 2, cursorY - 2, 4, 4, workingColors.get(selected) | OPAQUE_MASK, false);
     }
 
-    private void drawHexReadout(MatrixStack matrices) {
+    private void drawHexReadout(DrawContext context) {
         String hex = String.format("#%08X", workingColors.get(selected));
-        DrawableHelper.drawCenteredText(matrices, textRenderer, hex, wheelCenterX,
+        context.drawCenteredTextWithShadow(textRenderer, hex, wheelCenterX,
                 wheelCenterY + WHEEL_RADIUS + 66, 0xFFFFFFFF);
     }
 
@@ -228,13 +230,13 @@ public final class ColorWheelScreen extends Screen {
 
     private final class ValueSlider extends SliderWidget {
         ValueSlider(int x, int y, int width, int height, double initialValue) {
-            super(x, y, width, height, new LiteralText(""), initialValue);
+            super(x, y, width, height, Text.literal(""), initialValue);
             updateMessage();
         }
 
         @Override
         protected void updateMessage() {
-            setMessage(new LiteralText("Brightness: " + Math.round(this.value * 100) + "%"));
+            setMessage(Text.literal("Brightness: " + Math.round(this.value * 100) + "%"));
         }
 
         @Override
@@ -245,13 +247,13 @@ public final class ColorWheelScreen extends Screen {
 
     private final class AlphaSlider extends SliderWidget {
         AlphaSlider(int x, int y, int width, int height, double initialValue) {
-            super(x, y, width, height, new LiteralText(""), initialValue);
+            super(x, y, width, height, Text.literal(""), initialValue);
             updateMessage();
         }
 
         @Override
         protected void updateMessage() {
-            setMessage(new LiteralText("Alpha: " + Math.round(this.value * 100) + "%"));
+            setMessage(Text.literal("Alpha: " + Math.round(this.value * 100) + "%"));
         }
 
         @Override

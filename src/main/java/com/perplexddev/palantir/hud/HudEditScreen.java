@@ -4,10 +4,10 @@ import com.perplexddev.palantir.config.Settings;
 import com.perplexddev.palantir.tracker.ShardPlayerState;
 import com.perplexddev.palantir.tracker.ShardSnapshot;
 import com.perplexddev.palantir.util.RenderUtil;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.util.List;
 
@@ -62,7 +62,7 @@ public final class HudEditScreen extends Screen {
     private float dragStartScaleY;
 
     public HudEditScreen(Settings settings, ShardSnapshot liveSnapshot) {
-        super(new LiteralText("Edit Palantir Client HUD"));
+        super(Text.literal("Edit Palantir Client HUD"));
         this.settings = settings;
         this.displaySnapshot = liveSnapshot.isEmpty() ? FALLBACK_SNAPSHOT : liveSnapshot;
     }
@@ -85,8 +85,8 @@ public final class HudEditScreen extends Screen {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float tickDelta) {
-        renderBackground(matrices);
+    public void render(DrawContext context, int mouseX, int mouseY, float tickDelta) {
+        renderBackground(context, mouseX, mouseY, tickDelta);
 
         int x = Math.round((float) panelX);
         int y = Math.round((float) panelY);
@@ -94,38 +94,39 @@ public final class HudEditScreen extends Screen {
         int realHeight = Math.round(panel.height() * scaleY);
 
         HudOptions options = settings.hud();
+        MatrixStack matrices = context.getMatrices();
         matrices.push();
         matrices.translate(panelX, panelY, 0);
         matrices.scale(scaleX, scaleY, 1.0f);
-        RenderUtil.panel(matrices, 0, 0, panel.width(), panel.height(),
+        RenderUtil.panel(matrices, context.getVertexConsumers(), 0, 0, panel.width(), panel.height(),
                 options.backgroundColor(), options.borderColor(), options.roundedCorners());
         int textY = HudPanelBuilder.VERTICAL_PADDING;
         for (HudRow row : panel.rows()) {
             if (!row.text().isEmpty()) {
-                textRenderer.drawWithShadow(matrices, row.text(), HudPanelBuilder.HORIZONTAL_PADDING, textY, row.color());
+                context.drawText(textRenderer, row.text(), HudPanelBuilder.HORIZONTAL_PADDING, textY, row.color(), true);
             }
             textY += HudPanelBuilder.LINE_HEIGHT;
         }
         matrices.pop();
 
-        drawSelectionChrome(matrices, x, y, realWidth, realHeight);
-        DrawableHelper.drawCenteredText(matrices, textRenderer, HINT, width / 2, height - 16, HIGHLIGHT_COLOR);
+        drawSelectionChrome(context, x, y, realWidth, realHeight);
+        context.drawCenteredTextWithShadow(textRenderer, HINT, width / 2, height - 16, HIGHLIGHT_COLOR);
 
-        super.render(matrices, mouseX, mouseY, tickDelta);
+        super.render(context, mouseX, mouseY, tickDelta);
     }
 
-    private void drawSelectionChrome(MatrixStack matrices, int x, int y, int realWidth, int realHeight) {
-        RenderUtil.fillRect(matrices, x - 1, y - 1, realWidth + 2, 1, HIGHLIGHT_COLOR, false);
-        RenderUtil.fillRect(matrices, x - 1, y + realHeight, realWidth + 2, 1, HIGHLIGHT_COLOR, false);
-        RenderUtil.fillRect(matrices, x - 1, y - 1, 1, realHeight + 2, HIGHLIGHT_COLOR, false);
-        RenderUtil.fillRect(matrices, x + realWidth, y - 1, 1, realHeight + 2, HIGHLIGHT_COLOR, false);
+    private void drawSelectionChrome(DrawContext context, int x, int y, int realWidth, int realHeight) {
+        context.fill(x - 1, y - 1, x + realWidth + 1, y, HIGHLIGHT_COLOR);
+        context.fill(x - 1, y + realHeight, x + realWidth + 1, y + realHeight + 1, HIGHLIGHT_COLOR);
+        context.fill(x - 1, y - 1, x, y + realHeight + 1, HIGHLIGHT_COLOR);
+        context.fill(x + realWidth, y - 1, x + realWidth + 1, y + realHeight + 1, HIGHLIGHT_COLOR);
 
         Bounds widthHandle = widthHandleBounds(x, y, realWidth, realHeight);
         Bounds heightHandle = heightHandleBounds(x, y, realWidth, realHeight);
-        RenderUtil.fillRect(matrices, widthHandle.x(), widthHandle.y(), widthHandle.width(), widthHandle.height(),
-                HANDLE_COLOR, false);
-        RenderUtil.fillRect(matrices, heightHandle.x(), heightHandle.y(), heightHandle.width(), heightHandle.height(),
-                HANDLE_COLOR, false);
+        context.fill(widthHandle.x(), widthHandle.y(), widthHandle.x() + widthHandle.width(),
+                widthHandle.y() + widthHandle.height(), HANDLE_COLOR);
+        context.fill(heightHandle.x(), heightHandle.y(), heightHandle.x() + heightHandle.width(),
+                heightHandle.y() + heightHandle.height(), HANDLE_COLOR);
     }
 
     /** Thin vertical bar centred on the right edge; dragging it changes width only. */
