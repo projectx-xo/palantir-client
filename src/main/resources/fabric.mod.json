@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
-  "id": "shardtracker",
+  "id": "palantir",
   "version": "${version}",
-  "name": "Shard Tracker",
+  "name": "Palantir Client",
   "description": "Client-side tracker that detects which players are currently in the same shard by reading the multiplayer tab list, and shows them through a configurable HUD and corner notifications.",
   "authors": [
-    "Shard Tracker Contributors"
+    "Palantir Client Contributors"
   ],
   "license": "MIT",
-  "icon": "assets/shardtracker/icon.png",
+  "icon": "assets/palantir/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.perplexddev.shardtracker.ShardTrackerMod"
+      "com.perplexddev.palantir.PalantirMod"
     ],
     "modmenu": [
-      "com.perplexddev.shardtracker.config.ModMenuIntegration"
+      "com.perplexddev.palantir.config.ModMenuIntegration"
     ]
   },
   "depends": {

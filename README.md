@@ -1,10 +1,10 @@
-# Shard Tracker
+# Palantir Client
 
 A client-side Fabric mod for **Minecraft 1.18.2** that shows which players are in your shard and
 notifies you when a tracked player arrives.
 
 ```
-SHARD TRACKER
+PALANTIR CLIENT
 12 players detected
 3 tracked
 
@@ -28,12 +28,12 @@ mod can't detect shard membership on servers that don't.
 
 ## Install
 
-Drop the `shardtracker-*.jar` from [Releases](../../releases), Fabric API, and Cloth Config into your
+Drop the `palantir-*.jar` from [Releases](../../releases), Fabric API, and Cloth Config into your
 `mods` folder.
 
 ## Configuring
 
-Open via **Mods → Shard Tracker → Configure** (Mod Menu), or edit `config/shardtracker.json`.
+Open via **Mods → Palantir Client → Configure** (Mod Menu), or edit `config/palantir.json`.
 
 - **Tracked Players** — tick "Open editor" + Save for a dedicated Add/Remove screen; usernames get
   notified when they enter (case-insensitive). A separate "Open faction editor" list does the same
@@ -51,7 +51,7 @@ Open via **Mods → Shard Tracker → Configure** (Mod Menu), or edit `config/sh
 
 Changes apply instantly, no restart needed.
 
-Two keybinds (unbound by default — set them in **Options → Controls → Key Binds → Shard Tracker**):
+Two keybinds (unbound by default — set them in **Options → Controls → Key Binds → Palantir Client**):
 
 - **Edit HUD Position** — opens a drag-to-move editor for the HUD panel, with separate handles on
   the right and bottom edges to resize width and height independently
@@ -60,7 +60,7 @@ Two keybinds (unbound by default — set them in **Options → Controls → Key 
 ## Privacy
 
 Fully local — no network requests, telemetry, or analytics. The only file written is
-`config/shardtracker.json`.
+`config/palantir.json`.
 
 ## Building
 

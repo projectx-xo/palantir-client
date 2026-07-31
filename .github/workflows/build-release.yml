@@ -58,7 +58,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          name: Shard Tracker v${{ steps.version.outputs.version }}
+          name: Palantir Client v${{ steps.version.outputs.version }}
           body: |
             Automated build from commit ${{ github.sha }} on `${{ github.ref_name }}`.
 

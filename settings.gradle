@@ -9,4 +9,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'shardtracker'
+rootProject.name = 'palantir'
