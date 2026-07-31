@@ -11,24 +11,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  version:
     runs-on: ubuntu-latest
     if: contains(github.event.head_commit.message, 'RELEASE')
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
-
-      - name: Make gradlew executable
-        run: chmod +x gradlew
 
       - name: Compute next build number
         id: version
@@ -36,14 +26,46 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           BASE=$(grep -m1 '^mod_version=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          JQ_FILTER='[.[].tagName | select(startswith("v'"$BASE"'.")) | ltrimstr("v'"$BASE"'.") | select(test("^[0-9]+$")) | tonumber] | max // 0'
+          # Matches both the old bare "vBASE.N" tags and the new "vBASE.N+mcVersion" ones, so the
+          # counter keeps incrementing across the naming-scheme change instead of restarting.
+          JQ_FILTER='[.[].tagName | capture("^v'"$BASE"'\\.(?<n>[0-9]+)(\\+.*)?$")? | .n | tonumber] | max // 0'
           LATEST=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName --jq "$JQ_FILTER")
           NEXT=$((LATEST + 1))
-          VERSION="$BASE.$NEXT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$BASE.$NEXT" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: version
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ref: main
+            mc_version: 1.18.2
+            java_version: '17'
+          - ref: mc-1.21.1
+            mc_version: 1.21.1
+            java_version: '21'
+    steps:
+      - name: Check out ${{ matrix.ref }}
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ matrix.ref }}
+
+      - name: Set up JDK ${{ matrix.java_version }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java_version }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
 
       - name: Build and test
-        run: ./gradlew clean build --console=plain -Pmod_version=${{ steps.version.outputs.version }}
+        run: ./gradlew clean build --console=plain -Pmod_version=${{ needs.version.outputs.version }}
 
       - name: Compute release metadata
         id: meta
@@ -57,10 +79,10 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: Palantir Client v${{ steps.version.outputs.version }}
+          tag_name: v${{ needs.version.outputs.version }}+${{ matrix.mc_version }}
+          name: ${{ matrix.mc_version }} Palantir Client v${{ needs.version.outputs.version }}
           body: |
-            Automated build from commit ${{ github.sha }} on `${{ github.ref_name }}`.
+            Automated build from `${{ matrix.ref }}` (Minecraft ${{ matrix.mc_version }}).
 
             ${{ steps.meta.outputs.commit_message }}
           files: |
