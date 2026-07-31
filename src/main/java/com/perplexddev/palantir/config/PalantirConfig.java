@@ -137,7 +137,7 @@ public class PalantirConfig implements ConfigData {
         @ConfigEntry.Gui.Tooltip
         public int scaleYPercent = 100;
 
-        public boolean showTitle = true;
+        public boolean showTitle = false;
 
         public boolean showTotalCount = true;
 
