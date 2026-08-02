@@ -100,9 +100,9 @@ def verifyModMetadata = tasks.register('verifyModMetadata') {
             throw new GradleException(
                     'fabric.mod.json declares Minecraft ' + actualMinecraft + '; expected ' + expectedMinecraft)
         }
-        if (!metadata.authors?.contains('PerplexD Development')) {
+        if (!metadata.authors?.contains('Perplexd Development')) {
             throw new GradleException(
-                    'fabric.mod.json must credit PerplexD Development; found ' + metadata.authors)
+                    'fabric.mod.json must credit Perplexd Development; found ' + metadata.authors)
         }
     }
 }

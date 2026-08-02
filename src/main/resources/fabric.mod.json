@@ -5,7 +5,7 @@
   "name": "Palantir Client",
   "description": "Client-side tracker that detects which players are currently in the same shard by reading the multiplayer tab list, and shows them through a configurable HUD and corner notifications.",
   "authors": [
-    "PerplexD Development"
+    "Perplexd Development"
   ],
   "license": "MIT",
   "icon": "assets/palantir/icon.png",
