@@ -1,6 +1,7 @@
 # Gradle
 .gradle/
 build/
+.worktrees/
 !gradle/wrapper/gradle-wrapper.jar
 
 # Loom
