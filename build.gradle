@@ -83,6 +83,7 @@ def verifyModMetadata = tasks.register('verifyModMetadata') {
     doLast {
         File jarFile = remapJarTask.get().archiveFile.get().asFile
         Map metadata
+        boolean dumpCommandPresent
         java.util.zip.ZipFile archive = new java.util.zip.ZipFile(jarFile)
         try {
             def manifestEntry = archive.getEntry('fabric.mod.json')
@@ -90,6 +91,7 @@ def verifyModMetadata = tasks.register('verifyModMetadata') {
                 throw new GradleException('fabric.mod.json is missing from ' + jarFile.name)
             }
             metadata = (Map) new groovy.json.JsonSlurper().parse(archive.getInputStream(manifestEntry))
+            dumpCommandPresent = archive.getEntry('com/perplexddev/palantir/debug/DumpScoreboardCommand.class') != null
         } finally {
             archive.close()
         }
@@ -103,6 +105,9 @@ def verifyModMetadata = tasks.register('verifyModMetadata') {
         if (!metadata.authors?.contains('Perplexd Development')) {
             throw new GradleException(
                     'fabric.mod.json must credit Perplexd Development; found ' + metadata.authors)
+        }
+        if (dumpCommandPresent) {
+            throw new GradleException('The retired /palantirdump command is still packaged')
         }
     }
 }

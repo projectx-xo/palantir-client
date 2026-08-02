@@ -48,6 +48,10 @@ public class PalantirConfig implements ConfigData {
     @ConfigEntry.Gui.TransitiveObject
     public AdvancedSettings advanced = new AdvancedSettings();
 
+    @ConfigEntry.Category("webhook")
+    @ConfigEntry.Gui.TransitiveObject
+    public WebhookSettings webhook = new WebhookSettings();
+
     /**
      * Clamps hand-edited values back into range. Returning normally (rather than throwing) keeps a
      * partially invalid file usable instead of silently resetting every other setting.
@@ -295,5 +299,16 @@ public class PalantirConfig implements ConfigData {
 
         @ConfigEntry.Gui.Tooltip
         public boolean showTeamNames = false;
+    }
+
+    public static class WebhookSettings {
+        @ConfigEntry.Gui.Tooltip
+        public boolean enabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public String webhookUrl = "";
+
+        @ConfigEntry.ColorPicker
+        public int embedColor = 0x2DD4BF;
     }
 }

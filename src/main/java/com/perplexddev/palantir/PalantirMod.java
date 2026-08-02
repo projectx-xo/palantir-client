@@ -1,7 +1,6 @@
 package com.perplexddev.palantir;
 
 import com.perplexddev.palantir.config.Settings;
-import com.perplexddev.palantir.debug.DumpScoreboardCommand;
 import com.perplexddev.palantir.keybind.PalantirKeyBindings;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
@@ -23,8 +22,6 @@ public final class PalantirMod implements ClientModInitializer {
         PalantirKeyBindings.ensureRegistered();
         Settings settings = Settings.register();
         PalantirRuntime.create(MinecraftClient.getInstance(), settings, LOGGER);
-        // TEMPORARY: /palantirdump, remove alongside DumpScoreboardCommand once done debugging.
-        DumpScoreboardCommand.register(LOGGER);
         LOGGER.info("Palantir Client initialised");
     }
 
