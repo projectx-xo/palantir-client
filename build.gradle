@@ -69,3 +69,41 @@ jar {
         rename { "${it}_${project.base.archivesName.get()}" }
     }
 }
+
+def remapJarTask = tasks.named('remapJar')
+def verifyModMetadata = tasks.register('verifyModMetadata') {
+    group = 'verification'
+    description = 'Verifies the remapped JAR declares its configured Minecraft version and author.'
+
+    dependsOn remapJarTask
+
+    doLast {
+        File jarFile = remapJarTask.get().archiveFile.get().asFile
+        Map metadata
+        java.util.zip.ZipFile archive = new java.util.zip.ZipFile(jarFile)
+        try {
+            def manifestEntry = archive.getEntry('fabric.mod.json')
+            if (manifestEntry == null) {
+                throw new GradleException('fabric.mod.json is missing from ' + jarFile.name)
+            }
+            metadata = (Map) new groovy.json.JsonSlurper().parse(archive.getInputStream(manifestEntry))
+        } finally {
+            archive.close()
+        }
+
+        String expectedMinecraft = '~' + project.minecraft_version
+        String actualMinecraft = metadata.depends?.minecraft
+        if (actualMinecraft != expectedMinecraft) {
+            throw new GradleException(
+                    'fabric.mod.json declares Minecraft ' + actualMinecraft + '; expected ' + expectedMinecraft)
+        }
+        if (!metadata.authors?.contains('PerplexD Development')) {
+            throw new GradleException(
+                    'fabric.mod.json must credit PerplexD Development; found ' + metadata.authors)
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn verifyModMetadata
+}
