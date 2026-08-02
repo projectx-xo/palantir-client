@@ -8,6 +8,7 @@ import com.perplexddev.palantir.tracker.TrackedPlayers;
 import com.perplexddev.palantir.tracker.WildcardNameMatcher;
 import com.perplexddev.palantir.tracker.TrackerOptions;
 import com.perplexddev.palantir.util.ColorUtil;
+import com.perplexddev.palantir.webhook.WebhookOptions;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.minecraft.util.ActionResult;
@@ -34,6 +35,7 @@ public final class Settings {
     private TrackerOptions trackerOptions = TrackerOptions.DEFAULTS;
     private HudOptions hudOptions;
     private NotificationOptions notificationOptions;
+    private WebhookOptions webhookOptions;
     private boolean modEnabled = true;
     private boolean debugLogging;
     private boolean showTeamNames;
@@ -241,6 +243,10 @@ public final class Settings {
         return notificationOptions;
     }
 
+    public WebhookOptions webhook() {
+        return webhookOptions;
+    }
+
     public boolean modEnabled() {
         return modEnabled;
     }
@@ -321,5 +327,7 @@ public final class Settings {
                 config.appearance.notificationTitleColor,
                 config.appearance.notificationBodyColor,
                 config.appearance.roundedCorners);
+
+        webhookOptions = new WebhookOptions(config.webhook.enabled, config.webhook.webhookUrl, config.webhook.embedColor);
     }
 }

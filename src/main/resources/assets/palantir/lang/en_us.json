@@ -12,6 +12,7 @@
   "text.autoconfig.palantir.category.ignored_players": "Ignored Players",
   "text.autoconfig.palantir.category.appearance": "Appearance",
   "text.autoconfig.palantir.category.advanced": "Advanced",
+  "text.autoconfig.palantir.category.webhook": "Webhook",
 
   "text.autoconfig.palantir.option.general.enabled": "Enable mod",
   "text.autoconfig.palantir.option.general.enabled.@Tooltip": "Turn all shard detection, HUD rendering and notifications on or off.",
@@ -94,5 +95,11 @@
   "text.autoconfig.palantir.option.advanced.debugLogging": "Enable debug logging",
   "text.autoconfig.palantir.option.advanced.debugLogging.@Tooltip": "Log shard membership changes to the client log. Off by default.",
   "text.autoconfig.palantir.option.advanced.showTeamNames": "Show detected scoreboard team names",
-  "text.autoconfig.palantir.option.advanced.showTeamNames.@Tooltip": "When debug logging is on, also log the scoreboard team each player is assigned to.\nUseful for confirming that the server actually assigns teams."
+  "text.autoconfig.palantir.option.advanced.showTeamNames.@Tooltip": "When debug logging is on, also log the scoreboard team each player is assigned to.\nUseful for confirming that the server actually assigns teams.",
+
+  "text.autoconfig.palantir.option.webhook.enabled": "Enable webhook",
+  "text.autoconfig.palantir.option.webhook.enabled.@Tooltip": "POST a message to the URL below whenever a tracked player enters the shard.",
+  "text.autoconfig.palantir.option.webhook.webhookUrl": "Webhook URL",
+  "text.autoconfig.palantir.option.webhook.webhookUrl.@Tooltip": "A Discord channel webhook URL. The message is sent as a formatted embed, not the raw player name, so it can never trigger @everyone/@here or role pings.",
+  "text.autoconfig.palantir.option.webhook.embedColor": "Embed colour"
 }

@@ -14,6 +14,8 @@ import com.perplexddev.palantir.tracker.ObservedPlayer;
 import com.perplexddev.palantir.tracker.ShardScanner;
 import com.perplexddev.palantir.tracker.ShardTracker;
 import com.perplexddev.palantir.tracker.ShardUpdate;
+import com.perplexddev.palantir.webhook.HttpWebhookSender;
+import com.perplexddev.palantir.webhook.WebhookNotifier;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -52,6 +54,7 @@ public final class PalantirRuntime {
     private final NotificationSound sound;
     private final ShardHudRenderer hudRenderer;
     private final NotificationRenderer notificationRenderer;
+    private final WebhookNotifier webhookNotifier;
 
     private boolean tracking;
 
@@ -71,6 +74,7 @@ public final class PalantirRuntime {
         this.sound = new NotificationSound(client);
         this.hudRenderer = new ShardHudRenderer(client);
         this.notificationRenderer = new NotificationRenderer(client);
+        this.webhookNotifier = new WebhookNotifier(new HttpWebhookSender(logger));
     }
 
     public static PalantirRuntime create(MinecraftClient client, Settings settings, Logger logger) {
@@ -202,7 +206,9 @@ public final class PalantirRuntime {
 
     private void raiseArrivalNotifications(List<ShardUpdate.TrackedArrival> arrivals, long nowMillis) {
         for (int i = 0; i < arrivals.size(); i++) {
-            notifications.push(new ShardNotification(NOTIFICATION_TITLE, arrivalMessage(arrivals.get(i))), nowMillis);
+            ShardUpdate.TrackedArrival arrival = arrivals.get(i);
+            notifications.push(new ShardNotification(NOTIFICATION_TITLE, arrivalMessage(arrival)), nowMillis);
+            webhookNotifier.notifyArrival(settings.webhook(), arrival.displayName(), arrival.faction(), nowMillis);
         }
         playAlert();
     }
